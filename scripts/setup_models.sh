@@ -54,4 +54,27 @@ for model in nemotron-mini qwen2.5:7b; do
 done
 
 echo ""
+
+# Tagger model (1.5B, loaded on-demand for background tagging)
+echo "→ Pulling qwen2.5:1.5b (background tagger)"
+curl -s -X POST "${OLLAMA_URL}/api/pull" \
+    -H "Content-Type: application/json" \
+    -d '{"name": "qwen2.5:1.5b"}' | \
+    python3 -c "
+import sys, json
+for line in sys.stdin:
+    line = line.strip()
+    if not line: continue
+    d = json.loads(line)
+    if d.get('status') == 'success':
+        print('  ✓ Done')
+        break
+"
+# Note: tagger model is NOT pre-warmed — it loads on first use and
+# unloads after 5 minutes (keep_alive: 5m). No RAM held at idle.
+
+echo ""
 echo "Done! Models are hot and ready."
+echo "  - nemotron-mini  : hot (always loaded)"
+echo "  - qwen2.5:7b     : hot (always loaded)"
+echo "  - qwen2.5:1.5b   : cold (loads on demand, unloads after 5min)"

@@ -23,6 +23,14 @@ models:
     num_ctx: 8192
     num_predict: 1024
 
+  # Tiny background tagger model – loaded on demand, unloaded after use
+  tagger:
+    name: "qwen2.5:1.5b"
+    temperature: 0.0
+    num_ctx: 1024
+    num_predict: 128
+    keep_alive: "5m"              # unload 5 min after last use
+
   # Embeddings (local, runs on CPU – fastembed)
   embedding:
     name: "BAAI/bge-small-en-v1.5"
@@ -103,6 +111,16 @@ temporal:
     - "scheduled_routine"
     - "device_monitor"
     - "energy_optimization"
+    - "catalog_consolidation"
+
+# ─── Tagger ────────────────────────────────────────────────────────────────────
+tagger:
+  # Confidence below which the 1.5B LLM is invoked
+  llm_fallback_threshold: 0.55
+  # Confidence above which LLM proposals are auto-accepted into the catalog
+  auto_accept_threshold: 0.92
+  # Run consolidation every N days (via Temporal scheduled workflow)
+  consolidation_interval_days: 7
 
 # ─── Email (IMAP) ─────────────────────────────────────────────────────────────
 email:

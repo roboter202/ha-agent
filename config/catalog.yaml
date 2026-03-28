@@ -1,0 +1,747 @@
+meta:
+  version: 1
+  created: "2026-03-28"
+  auto_entries: 0
+  manual_entries: 0          # bumped at runtime
+  pending_review: 0
+
+# ── Valid values for each dimension ───────────────────────────────────────────
+taxonomy:
+  cuisine:
+    - german
+    - italian
+    - asian
+    - japanese
+    - indian
+    - mexican
+    - french
+    - mediterranean
+    - american
+    - middle_eastern
+    - neutral
+  effort:
+    - none        # ordered / not cooked at all
+    - minimal     # leftovers, bread, cold assembly
+    - low         # eggs, sandwiches, quick pan
+    - medium      # one-pot, stir-fry, simple oven
+    - high        # roasts, complex bakes, multi-step
+  heaviness:
+    - very_light  # smoothie, yogurt, fruit
+    - light       # salad, soup, broth
+    - medium      # rice + protein, stir-fry, pasta
+    - heavy       # schnitzel, pizza, curry with rice
+    - very_heavy  # Christmas dinner, full roast, fondue
+  meal_type:
+    - breakfast
+    - brunch
+    - lunch
+    - dinner
+    - snack
+    - dessert
+    - drink
+  dietary:
+    - vegetarian
+    - vegan
+    - gluten_free
+    - dairy_free
+    - nut_free
+    - low_carb
+    - high_protein
+
+# ── Keyword → category rules ──────────────────────────────────────────────────
+# Every keyword list is OR-matched against the lowercased description.
+# Longer matches take priority over shorter ones.
+categories:
+
+  cuisine:
+    german:
+      - schnitzel
+      - sauerkraut
+      - bratwurst
+      - currywurst
+      - wurst
+      - braten
+      - sauerbraten
+      - rouladen
+      - gulasch
+      - käsespätzle
+      - spätzle
+      - maultaschen
+      - knödel
+      - kartoffelsuppe
+      - reibekuchen
+      - flammkuchen
+      - zwiebelrostbraten
+      - leberkäse
+      - weißwurst
+      - brezel
+      - pretzel
+      - strudel
+      - bienenstich
+      - kaiserschmarrn
+      - semmelknödel
+      - eintopf
+      - linsensuppe
+      - erbsensuppe
+    italian:
+      - pasta
+      - pizza
+      - risotto
+      - lasagne
+      - lasagna
+      - tiramisu
+      - gnocchi
+      - pesto
+      - carbonara
+      - bolognese
+      - arrabiata
+      - marinara
+      - alfredo
+      - bruschetta
+      - calzone
+      - focaccia
+      - minestrone
+      - ossobuco
+      - saltimbocca
+      - panna cotta
+      - parmesan
+      - mozzarella
+      - prosciutto
+    asian:
+      - wok
+      - fried rice
+      - gebratener reis
+      - chow mein
+      - pad thai
+      - spring roll
+      - frühlingsrolle
+      - dim sum
+      - dumplings
+      - gyoza
+      - baozi
+      - bibimbap
+      - fried noodles
+      - gebratene nudeln
+      - teriyaki
+      - satay
+      - pho
+      - tom yum
+      - laksa
+    japanese:
+      - sushi
+      - ramen
+      - udon
+      - soba
+      - tempura
+      - miso
+      - onigiri
+      - takoyaki
+      - katsu
+      - okonomiyaki
+      - tonkatsu
+      - yakitori
+      - edamame
+    indian:
+      - curry
+      - dal
+      - dahl
+      - naan
+      - tikka
+      - masala
+      - biryani
+      - samosa
+      - chana
+      - paneer
+      - korma
+      - vindaloo
+      - saag
+      - raita
+      - mango chutney
+    mexican:
+      - taco
+      - burrito
+      - enchilada
+      - quesadilla
+      - guacamole
+      - nachos
+      - fajita
+      - tamale
+      - salsa
+      - tortilla
+      - jalapeño
+    french:
+      - quiche
+      - crêpe
+      - ratatouille
+      - boeuf bourguignon
+      - cassoulet
+      - coq au vin
+      - soupe à l'oignon
+      - croissant
+      - baguette
+      - flammkuchen      # alsatian – dual-tagged
+    mediterranean:
+      - hummus
+      - falafel
+      - tabbouleh
+      - shakshuka
+      - mezze
+      - tzatziki
+      - moussaka
+      - souvlaki
+      - gyros
+      - pita
+      - couscous
+      - tagine
+    american:
+      - burger
+      - hot dog
+      - bbq
+      - barbecue
+      - mac and cheese
+      - mac & cheese
+      - pancakes
+      - waffles
+      - fried chicken
+      - pulled pork
+      - coleslaw
+      - brownie
+      - cheesecake
+    middle_eastern:
+      - kebab
+      - döner
+      - shawarma
+      - lahmacun
+      - baklava
+      - pilaf
+      - köfte
+      - börek
+
+  effort:
+    none:
+      - bestellt
+      - lieferando
+      - uber eats
+      - deliveroo
+      - pizza service
+      - mcdonalds
+      - mc donald
+      - burger king
+      - kfc
+      - subway
+      - ordered
+      - takeaway
+      - takeout
+      - delivery
+    minimal:
+      - reste
+      - rest vom
+      - leftovers
+      - aufgewärmt
+      - aufwärmen
+      - brot
+      - brötchen
+      - aufschnitt
+      - müsli
+      - cornflakes
+      - joghurt
+      - yogurt
+      - quark
+      - käsebrot
+      - butterbrot
+      - toast
+      - cracker
+      - kalt
+      - cold plate
+      - brotzeit
+    low:
+      - rührei
+      - spiegelei
+      - scrambled eggs
+      - fried egg
+      - omelette
+      - omelette
+      - sandwich
+      - wrap
+      - salat
+      - salad
+      - suppe aus tüte
+      - instantnudeln
+      - instant noodles
+      - dosensuppe
+      - canned soup
+      - pfannkuchen
+    medium:
+      - pfanne
+      - pan
+      - stir-fry
+      - stir fry
+      - suppe
+      - soup
+      - eintopf
+      - one-pot
+      - one pot
+      - ofen
+      - oven
+      - pasta gekocht
+      - reis gekocht
+    high:
+      - selbstgemacht
+      - selbst gemacht
+      - homemade
+      - home made
+      - gebacken
+      - baked
+      - braten
+      - roast
+      - geschmort
+      - braised
+      - mehrere stunden
+      - slow cooked
+      - slow cooker
+      - aufwendig
+      - komplex
+
+  heaviness:
+    very_light:
+      - smoothie
+      - smoothiebowl
+      - smoothie bowl
+      - obst
+      - fruit
+      - joghurt
+      - yogurt
+      - quark
+      - müsli
+      - granola
+      - wassermelone
+    light:
+      - salat
+      - salad
+      - brühe
+      - broth
+      - bouillon
+      - suppe
+      - soup
+      - gazpacho
+      - miso
+      - gedünstetes gemüse
+      - steamed vegetables
+      - sashimi
+    medium:
+      - pasta
+      - reis
+      - rice
+      - risotto
+      - noodles
+      - nudeln
+      - stir-fry
+      - sandwich
+      - wrap
+      - omelette
+      - quiche
+    heavy:
+      - pizza
+      - schnitzel
+      - burger
+      - pommes
+      - fries
+      - curry mit reis
+      - braten
+      - roast
+      - käsespätzle
+      - lasagne
+      - mac and cheese
+      - pulled pork
+      - dumplings
+    very_heavy:
+      - fondue
+      - raclette
+      - weihnachtsessen
+      - christmas dinner
+      - full roast
+      - thanksgiving
+      - schweinebraten
+      - gans
+      - ente
+
+  meal_type:
+    breakfast:
+      - frühstück
+      - breakfast
+      - müsli
+      - granola
+      - toast
+      - overnight oats
+      - smoothie
+      - croissant
+      - rührei
+      - scrambled eggs
+      - spiegelei
+      - pancakes
+      - pfannkuchen
+      - french toast
+      - arme ritter
+      - waffles
+      - waffeln
+      - porridge
+      - haferbrei
+    lunch:
+      - mittagessen
+      - lunch
+      - mittagspause
+    dinner:
+      - abendessen
+      - dinner
+      - abendbrot
+    snack:
+      - snack
+      - zwischenmahlzeit
+      - riegel
+      - bar
+      - nüsse
+      - nuts
+      - chips
+      - obst
+      - fruit
+    dessert:
+      - dessert
+      - nachtisch
+      - kuchen
+      - cake
+      - eis
+      - ice cream
+      - tiramisu
+      - panna cotta
+      - pudding
+      - mousse
+      - tarte
+      - brownie
+      - cookie
+      - keks
+
+  dietary:
+    vegetarian:
+      - vegetarisch
+      - vegetarian
+      - veggie
+      - käsespätzle
+      - gemüsecurry
+      - vegetable curry
+      - shakshuka
+      - caprese
+      - margherita
+      - quattro formaggi
+      - paneer
+      - falafal
+      - falafel
+      - hummus
+    vegan:
+      - vegan
+      - pflanzlich
+      - plant-based
+      - no dairy
+      - ohne milch
+    gluten_free:
+      - glutenfrei
+      - gluten free
+      - gluten-free
+      - ohne gluten
+    dairy_free:
+      - laktosefrei
+      - lactose free
+      - ohne milch
+      - ohne käse
+      - dairy free
+    low_carb:
+      - low carb
+      - lowcarb
+      - keto
+      - ketogen
+      - ohne kohlenhydrate
+    high_protein:
+      - high protein
+      - proteinreich
+      - proteinshake
+      - whey
+
+# ── Modifier rules ─────────────────────────────────────────────────────────────
+# Applied AFTER base tags are set.
+# "shift" adjusts a dimension by N steps (+ = heavier/more effort, - = lighter)
+modifiers:
+  heaviness:
+    lighter:
+      shift: -1
+      triggers:
+        - mit salat
+        - with salad
+        - mit gemüse
+        - with vegetables
+        - leicht
+        - light version
+        - kleine portion
+        - small portion
+    heavier:
+      shift: +1
+      triggers:
+        - extra käse
+        - extra cheese
+        - mit pommes
+        - with fries
+        - doppelt
+        - double
+        - große portion
+        - large portion
+  effort:
+    reduce:
+      shift: -1
+      triggers:
+        - reste
+        - leftovers
+        - aufgewärmt
+        - reheated
+        - aus der dose
+        - from a can
+    increase:
+      shift: +1
+      triggers:
+        - selbstgemacht
+        - homemade
+        - von grund auf
+        - from scratch
+
+# ── Inheritance rules ──────────────────────────────────────────────────────────
+# When description references a previous meal ("Reste vom Curry"),
+# inherit the referenced meal's tags and override effort to minimal.
+inheritance_triggers:
+  - reste vom
+  - rest vom
+  - leftovers from
+  - übrig von
+  - aufgewärmte
+  - reheated
+
+# ── Ordered food detection ─────────────────────────────────────────────────────
+# If any of these appear, home_cooked = false, effort = none
+ordered_triggers:
+  - lieferando
+  - uber eats
+  - deliveroo
+  - wolt
+  - pizza service
+  - bestellt bei
+  - ordered from
+  - takeaway
+  - takeout
+
+# ── Specific known dishes ─────────────────────────────────────────────────────
+# Highest priority — overrides all keyword matching.
+# aliases: list of string variants (all lowercased).
+dishes:
+
+  kaesespaetzle:
+    aliases: [käsespätzle, kaesespaetzle, käse-spätzle, käse spätzle, cheese spaetzle]
+    tags:
+      cuisine: german
+      effort: high
+      heaviness: heavy
+      meal_type: dinner
+      dietary: [vegetarian]
+
+  maultaschen:
+    aliases: [maultaschen, maultasche]
+    tags:
+      cuisine: german
+      effort: medium
+      heaviness: medium
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  schnitzel:
+    aliases: [schnitzel, wiener schnitzel, jägerschnitzel, rahmschnitzel, putenschnitzel, hähnchenschnitzel]
+    tags:
+      cuisine: german
+      effort: medium
+      heaviness: heavy
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  gulasch:
+    aliases: [gulasch, gulaschsuppe, paprikagulasch, rindergulasch, szegediner]
+    tags:
+      cuisine: german
+      effort: high
+      heaviness: heavy
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  flammkuchen:
+    aliases: [flammkuchen, tarte flambée, tarte flambee]
+    tags:
+      cuisine: french
+      effort: medium
+      heaviness: medium
+      meal_type: [lunch, dinner]
+      dietary: [vegetarian]   # base — overridden if speck/bacon in text
+
+  gemuesecurry:
+    aliases: [gemüsecurry, gemüse curry, vegetable curry, veggie curry, vegcurry]
+    tags:
+      cuisine: indian
+      effort: medium
+      heaviness: medium
+      meal_type: dinner
+      dietary: [vegetarian, vegan]
+
+  haehnchengeschnetzeltes:
+    aliases: [hähnchengeschnetzeltes, hähnchen geschnetzeltes, hühnergeschnetzeltes, chicken strips, chicken geschnetzeltes]
+    tags:
+      cuisine: german
+      effort: medium
+      heaviness: medium
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  overnight_oats:
+    aliases: [overnight oats, oats über nacht, oats overnight, bircher müsli, birchermüsli]
+    tags:
+      cuisine: neutral
+      effort: minimal
+      heaviness: very_light
+      meal_type: breakfast
+      dietary: [vegetarian]
+
+  shakshuka:
+    aliases: [shakshuka, shakshouka, shakshuca]
+    tags:
+      cuisine: middle_eastern
+      effort: low
+      heaviness: light
+      meal_type: [breakfast, brunch, lunch]
+      dietary: [vegetarian]
+
+  ramen:
+    aliases: [ramen, tonkotsu, shoyu ramen, miso ramen]
+    tags:
+      cuisine: japanese
+      effort: high
+      heaviness: medium
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  carbonara:
+    aliases: [carbonara, pasta carbonara, spaghetti carbonara]
+    tags:
+      cuisine: italian
+      effort: medium
+      heaviness: heavy
+      meal_type: dinner
+      dietary: []
+
+  bolognese:
+    aliases: [bolognese, pasta bolognese, spaghetti bolognese, ragù, ragu]
+    tags:
+      cuisine: italian
+      effort: medium
+      heaviness: heavy
+      meal_type: dinner
+      dietary: []
+
+  risotto:
+    aliases: [risotto, pilzrisotto, gemüserisotto, kürbisrisotto]
+    tags:
+      cuisine: italian
+      effort: medium
+      heaviness: medium
+      meal_type: dinner
+      dietary: [vegetarian]
+
+  pfannkuchen:
+    aliases: [pfannkuchen, palatschinken, crêpe, crepe, pancakes]
+    tags:
+      cuisine: neutral
+      effort: low
+      heaviness: light
+      meal_type: [breakfast, brunch, dessert]
+      dietary: [vegetarian]
+
+  reibekuchen:
+    aliases: [reibekuchen, kartoffelpuffer, rösti, latkes, potato pancakes]
+    tags:
+      cuisine: german
+      effort: medium
+      heaviness: medium
+      meal_type: [lunch, dinner]
+      dietary: [vegetarian]
+
+  biryani:
+    aliases: [biryani, biriyani, chicken biryani, lamb biryani]
+    tags:
+      cuisine: indian
+      effort: high
+      heaviness: heavy
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  falafel:
+    aliases: [falafel, falafal, falafel wrap, falafel teller]
+    tags:
+      cuisine: mediterranean
+      effort: medium
+      heaviness: medium
+      meal_type: [lunch, dinner]
+      dietary: [vegetarian, vegan]
+
+  pad_thai:
+    aliases: [pad thai, pad thai nudeln, phad thai]
+    tags:
+      cuisine: asian
+      effort: medium
+      heaviness: medium
+      meal_type: dinner
+      dietary: []
+
+  sushi:
+    aliases: [sushi, maki, nigiri, temaki, uramaki, sashimi]
+    tags:
+      cuisine: japanese
+      effort: high
+      heaviness: medium
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  pizza:
+    aliases: [pizza, pizza margherita, pizza salami, pizza fungi, pizza hawaii, tiefkühlpizza, tk pizza]
+    tags:
+      cuisine: italian
+      effort: none     # assume ordered unless "selbstgemacht" modifier
+      heaviness: heavy
+      meal_type: dinner
+      dietary: []
+
+  burger:
+    aliases: [burger, hamburger, cheeseburger, veggie burger, chicken burger]
+    tags:
+      cuisine: american
+      effort: none
+      heaviness: heavy
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  doener:
+    aliases: [döner, doner, döner kebab, dürüm, dürüm döner]
+    tags:
+      cuisine: middle_eastern
+      effort: none
+      heaviness: heavy
+      meal_type: [lunch, dinner]
+      dietary: []
+
+  hausgemachte_suppe:
+    aliases: [hausgemachte suppe, selbstgemachte suppe, homemade soup, selbstgekochte suppe]
+    tags:
+      cuisine: neutral
+      effort: medium
+      heaviness: light
+      meal_type: [lunch, dinner]
+      dietary: [vegetarian]

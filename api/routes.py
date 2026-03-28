@@ -105,4 +105,77 @@ def build_router(
         await cache.history.clear(session_id)
         return {"cleared": session_id}
 
+    # ── Catalog endpoints ──────────────────────────────────────────────────
+
+    @router.get("/catalog/stats")
+    async def catalog_stats():
+        from core.memory.catalog import get_catalog
+        return get_catalog().stats()
+
+    @router.post("/catalog/tag")
+    async def tag_meal(body: dict):
+        """Tag a meal description. Body: {"description": "...", "history": [...]}"""
+        from core.memory.tagger import get_tagger
+        description = body.get("description", "")
+        if not description:
+            raise HTTPException(400, "description required")
+        history = body.get("history", [])
+        result = await get_tagger().tag(description, meal_history=history)
+        return result.to_dict()
+
+    @router.get("/catalog/proposals")
+    async def list_proposals():
+        from core.memory.catalog import get_catalog
+        return get_catalog().get_pending_proposals()
+
+    @router.post("/catalog/proposals/{proposal_id}/accept")
+    async def accept_proposal(proposal_id: str):
+        from core.memory.catalog import get_catalog
+        ok = get_catalog().accept_proposal(proposal_id)
+        if not ok:
+            raise HTTPException(404, f"Proposal {proposal_id!r} not found or already reviewed")
+        return {"accepted": proposal_id}
+
+    @router.post("/catalog/proposals/{proposal_id}/reject")
+    async def reject_proposal(proposal_id: str):
+        from core.memory.catalog import get_catalog
+        ok = get_catalog().reject_proposal(proposal_id)
+        if not ok:
+            raise HTTPException(404, f"Proposal {proposal_id!r} not found or already reviewed")
+        return {"rejected": proposal_id}
+
+    @router.post("/catalog/correct")
+    async def correct_tag(body: dict):
+        """
+        Record a user correction.
+        Body: {"raw_input": "...", "correct_tags": {...}, "previous_tags": {...}}
+        """
+        from core.memory.tagger import apply_correction
+        raw_input = body.get("raw_input", "")
+        correct_tags = body.get("correct_tags", {})
+        previous_tags = body.get("previous_tags", {})
+        if not raw_input or not correct_tags:
+            raise HTTPException(400, "raw_input and correct_tags required")
+        await apply_correction(raw_input, correct_tags, previous_tags)
+        return {"recorded": raw_input}
+
+    @router.post("/catalog/consolidate")
+    async def trigger_consolidation(body: dict = {}):
+        """Manually trigger the catalog consolidation workflow."""
+        import time
+        from core.config import get_settings
+        try:
+            from temporalio.client import Client
+            cfg = get_settings()
+            client = await Client.connect(cfg.temporal_host, namespace=cfg.temporal_namespace)
+            handle = await client.start_workflow(
+                "catalog_consolidation",
+                args=[{"days": body.get("days", 7)}],
+                id=f"catalog-consolidation-{int(time.time())}",
+                task_queue=cfg.get("temporal", "task_queue", default="ha-agent-tasks"),
+            )
+            return {"workflow_id": handle.id, "status": "started"}
+        except Exception as e:
+            raise HTTPException(500, str(e))
+
     return router

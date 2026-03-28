@@ -22,6 +22,14 @@ from core.workflows.temporal_workflows import (
     trigger_n8n_activity,
     wait_for_state_activity,
 )
+from core.workflows.catalog_consolidation import (
+    CatalogConsolidation,
+    load_recent_corrections_activity,
+    find_consistent_patterns_activity,
+    generate_keyword_proposals_activity,
+    apply_patterns_to_catalog_activity,
+    get_catalog_stats_activity,
+)
 
 log = structlog.get_logger(__name__)
 
@@ -42,12 +50,18 @@ async def main() -> None:
             ScheduledRoutine,
             DeviceMonitor,
             EnergyOptimization,
+            CatalogConsolidation,
         ],
         activities=[
             call_ha_service_activity,
             get_ha_state_activity,
             trigger_n8n_activity,
             wait_for_state_activity,
+            load_recent_corrections_activity,
+            find_consistent_patterns_activity,
+            generate_keyword_proposals_activity,
+            apply_patterns_to_catalog_activity,
+            get_catalog_stats_activity,
         ],
     )
     log.info("temporal_worker.starting")
