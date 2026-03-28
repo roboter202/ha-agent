@@ -37,3 +37,10 @@ orjson==3.10.12
 # ─── NLP (lightweight, for fast intent pre-classification) ────────────────────
 regex==2024.11.6
 rapidfuzz==3.12.2
+
+# ─── Email (IMAP) ─────────────────────────────────────────────────────────────
+aioimaplib==2.0.1
+
+# ─── Online LLM SDKs (optional – used only for research escalation) ───────────
+anthropic==0.42.0
+openai==1.59.0

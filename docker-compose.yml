@@ -183,6 +183,91 @@ services:
       timeout: 10s
       retries: 3
 
+  # ─── Document Management (Paperless-ngx) ─────────────────────────────────
+  paperless-redis:
+    image: redis:7-alpine
+    container_name: ha-paperless-redis
+    restart: unless-stopped
+
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: ha-paperless
+    restart: unless-stopped
+    depends_on:
+      - paperless-redis
+    ports:
+      - "8010:8000"
+    volumes:
+      - paperless_data:/usr/src/paperless/data
+      - paperless_media:/usr/src/paperless/media
+      - paperless_export:/usr/src/paperless/export
+      - ./config/paperless/consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_OCR_LANGUAGES: deu+eng         # German + English OCR
+      PAPERLESS_OCR_LANGUAGE: deu+eng
+      PAPERLESS_TIME_ZONE: Europe/Berlin
+      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY:-changeme-paperless-secret}
+      PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER:-admin}
+      PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD:-changeme}
+      PAPERLESS_URL: http://localhost:8010
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ─── Financial Planning (Firefly III) ─────────────────────────────────────
+  firefly-db:
+    image: mariadb:10.11
+    container_name: ha-firefly-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${FIREFLY_DB_ROOT_PASSWORD:-firefly_root}
+      MYSQL_DATABASE: firefly
+      MYSQL_USER: firefly
+      MYSQL_PASSWORD: ${FIREFLY_DB_PASSWORD:-firefly_pass}
+    volumes:
+      - firefly_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+
+  firefly:
+    image: fireflyiii/core:latest
+    container_name: ha-firefly
+    restart: unless-stopped
+    depends_on:
+      firefly-db:
+        condition: service_healthy
+    ports:
+      - "8011:8080"
+    volumes:
+      - firefly_upload:/var/www/html/storage/upload
+    environment:
+      APP_ENV: production
+      APP_KEY: ${FIREFLY_APP_KEY:-SomeRandomStringOf32CharsExactly}
+      DB_CONNECTION: mysql
+      DB_HOST: firefly-db
+      DB_PORT: 3306
+      DB_DATABASE: firefly
+      DB_USERNAME: firefly
+      DB_PASSWORD: ${FIREFLY_DB_PASSWORD:-firefly_pass}
+      TRUSTED_PROXIES: "**"
+      APP_URL: http://localhost:8011
+      DEFAULT_LANGUAGE: de_DE
+      DEFAULT_LOCALE: de_DE
+      TZ: Europe/Berlin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/about"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   # ─── Temporal Worker (runs inside same image) ─────────────────────────────
   ha-temporal-worker:
     build:
@@ -215,3 +300,8 @@ volumes:
   n8n_data:
   temporal_data:
   agent_data:
+  paperless_data:
+  paperless_media:
+  paperless_export:
+  firefly_db_data:
+  firefly_upload:

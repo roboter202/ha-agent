@@ -15,7 +15,9 @@ Graph topology:
     │
     ├──research──────────► [research_node] ──► END
     │
-    └──workflow──────────► [workflow_node] ──► END
+    ├──workflow──────────► [workflow_node] ──► END
+    │
+    └──personal──────────► [personal_node] ──► END
 
 All paths update AgentState.  The API layer reads state.response to reply.
 """
@@ -24,7 +26,7 @@ from __future__ import annotations
 
 import re
 import time
-from typing import Any, Literal
+from typing import Any
 
 import structlog
 from langgraph.graph import StateGraph, END
@@ -35,20 +37,50 @@ from core.agents.tool_agent import ToolAgent
 from core.agents.general_agent import GeneralAgent
 from core.agents.research_agent import ResearchAgent
 from core.agents.workflow_agent import WorkflowAgent
+from core.agents.personal_agent import PersonalAgent
 from core.integrations.home_assistant import HAClient
 from core.memory.cache import get_cache
 
 log = structlog.get_logger(__name__)
 
 # ── Routing keywords / patterns ───────────────────────────────────────────────
-# Used for fast pre-classification before any LLM call.
+# Evaluated in order; first match wins (except instant which is checked first).
+
+# Personal data patterns – checked BEFORE research to avoid misrouting
+_PERSONAL_PATTERNS = re.compile(
+    r"(?:"
+    # Email – EN
+    r"(?:check|read|show|get|any|new)\s+(?:my\s+)?(?:emails?|mails?|inbox|messages?)|"
+    r"emails?\s+from\s+\w+|"
+    # Email – DE
+    r"(?:check|zeig|lies|hol|gibt es)\s+(?:meine?\s+)?(?:e-?mails?|nachrichten|posteingang)|"
+    r"e-?mails?\s+von\s+\w+|neue\s+(?:e-?mails?|nachrichten)|"
+    # Finance – EN
+    r"how\s+much\s+(?:did\s+i\s+spend|have\s+i\s+spent)|"
+    r"(?:my\s+)?(?:spending|expenses?|transactions?|budget|balance|account)|"
+    r"what\s+did\s+i\s+(?:spend|buy|purchase)|"
+    # Finance – DE
+    r"(?:wie\s+viel|was)\s+habe?\s+ich\s+(?:ausgegeben|gekauft|bezahlt)|"
+    r"(?:meine?\s+)?(?:ausgaben?|finanzen|budget|kontostand|transaktionen?|konto)|"
+    r"was\s+hab\s+ich\s+(?:ausgegeben|gekauft)|"
+    # Receipts / Paperless – EN
+    r"(?:receipts?|invoices?|documents?|what\s+did\s+i\s+buy)\s+(?:from|at)\s+\w+|"
+    r"(?:my\s+)?(?:receipts?|paperless|scanned\s+documents?)|"
+    # Receipts / Paperless – DE
+    r"(?:kassenbon|quittung|rechnung|belege?|dokumente?)\s+(?:von|bei)\s+\w+|"
+    r"was\s+(?:hab|habe)\s+ich\s+(?:bei|in)\s+\w+\s+gekauft|"
+    r"eink[äa]ufe?\s+(?:bei|von|in)?\s+\w*|"
+    r"(?:meine?\s+)?(?:belege?|quittungen?|dokumente?|paperless)"
+    r")",
+    re.IGNORECASE,
+)
 
 _RESEARCH_PATTERNS = re.compile(
-    r"(?:search|find|look up|what is|what are|how (?:does|do|can)|explain|"
-    r"tell me about|compare|best|recommend|price|buy|review|latest|news|"
-    # German
-    r"suche|suchen|finde|was ist|was sind|wie (?:funktioniert|geht|kann)|"
-    r"erkläre|erkläre mir|vergleiche|bestes|empfiehl|preis|kaufen|bewertung|neueste|nachrichten)",
+    r"(?:search|look up|what is|what are|how (?:does|do|can)|explain|"
+    r"tell me about|compare|best|recommend|price|review|latest|news|"
+    # German – but NOT personal finance words
+    r"suchen|finde|was ist|was sind|wie (?:funktioniert|geht|kann)|"
+    r"erkläre|vergleiche|bestes|empfiehl|bewertung|neueste|nachrichten)",
     re.IGNORECASE,
 )
 
@@ -83,6 +115,7 @@ class Orchestrator:
         self._general = GeneralAgent()
         self._research = ResearchAgent()
         self._workflow = WorkflowAgent()
+        self._personal = PersonalAgent()
         self._graph = self._build_graph()
 
     # ── Graph construction ────────────────────────────────────────────────
@@ -96,6 +129,7 @@ class Orchestrator:
         builder.add_node("general", self._general_node)
         builder.add_node("research", self._research_node)
         builder.add_node("workflow", self._workflow_node)
+        builder.add_node("personal", self._personal_node)
 
         builder.set_entry_point("classify")
 
@@ -108,17 +142,18 @@ class Orchestrator:
                 RouteType.GENERAL: "general",
                 RouteType.RESEARCH: "research",
                 RouteType.WORKFLOW: "workflow",
+                RouteType.PERSONAL: "personal",
             },
         )
 
-        # Tool agent can fall back to general if it can't handle the request
+        # Tool agent falls back to general if it produces no response
         builder.add_conditional_edges(
             "tool",
             lambda s: "general" if not s.response else END,
             {"general": "general", END: END},
         )
 
-        for node in ("instant", "general", "research", "workflow"):
+        for node in ("instant", "general", "research", "workflow", "personal"):
             builder.add_edge(node, END)
 
         return builder.compile()
@@ -132,7 +167,7 @@ class Orchestrator:
 
         text = state.user_message.strip()
 
-        # 1. Try instant pattern match first (fastest path)
+        # 1. Instant pattern match (fastest path – no LLM)
         instant = get_instant_agent()
         intent, slots = instant.classify(text)
         if intent:
@@ -142,26 +177,32 @@ class Orchestrator:
             log.info("classify.instant", intent=intent.name)
             return state
 
-        # 2. Workflow keywords
+        # 2. Personal data (email / finance / paperless) – checked early to
+        #    prevent misrouting to research or general
+        if _PERSONAL_PATTERNS.search(text):
+            state.route = RouteType.PERSONAL
+            log.info("classify.personal")
+            return state
+
+        # 3. Workflow keywords
         if _WORKFLOW_PATTERNS.search(text):
-            # Check if instant already handles it (routine patterns)
             state.route = RouteType.WORKFLOW
             log.info("classify.workflow")
             return state
 
-        # 3. Research keywords
+        # 4. External research (web search needed)
         if _RESEARCH_PATTERNS.search(text) and not _HA_CONTROL_PATTERNS.search(text):
             state.route = RouteType.RESEARCH
             log.info("classify.research")
             return state
 
-        # 4. HA control keywords → tool agent
+        # 5. HA device control → tool agent
         if _HA_CONTROL_PATTERNS.search(text):
             state.route = RouteType.TOOL
             log.info("classify.tool")
             return state
 
-        # 5. Default to general conversation
+        # 6. Default: general conversation
         state.route = RouteType.GENERAL
         log.info("classify.general")
         return state
@@ -189,6 +230,11 @@ class Orchestrator:
 
     async def _workflow_node(self, state: AgentState) -> AgentState:
         state = await self._workflow.run(state)
+        await self._save_to_history(state)
+        return state
+
+    async def _personal_node(self, state: AgentState) -> AgentState:
+        state = await self._personal.run(state)
         await self._save_to_history(state)
         return state
 

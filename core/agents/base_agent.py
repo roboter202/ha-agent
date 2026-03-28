@@ -14,6 +14,7 @@ class RouteType(str, Enum):
     GENERAL = "general"      # < 3s: Qwen 3.5 9B + RAG
     RESEARCH = "research"    # 5-15s: SearXNG + optional online LLM
     WORKFLOW = "workflow"    # async: n8n webhook or Temporal durable workflow
+    PERSONAL = "personal"    # < 2s: email / finance / Paperless-ngx (private data, no online LLM)
 
 
 class AgentState(BaseModel):

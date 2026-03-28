@@ -300,3 +300,115 @@ instant_intents:
       - "kino(?:modus|abend)?"
     action: "n8n_webhook"
     webhook: "movie_mode"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # The intents below are HINTS that route to the PERSONAL agent (not executed
+  # inline here). They are checked in the orchestrator's _PERSONAL_PATTERNS
+  # regex, but listed here so the intent engine can give a typed label.
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # ── Email ────────────────────────────────────────────────────────────────────
+  email_inbox:
+    patterns:
+      # EN
+      - "(?:check|show|read|any|new|get)\\s+(?:my\\s+)?(?:emails?|mails?|inbox)"
+      - "(?:do\\s+i\\s+have|are\\s+there)\\s+(?:any\\s+)?(?:new\\s+)?(?:emails?|messages?)"
+      - "what(?:'s|\\s+is)\\s+in\\s+my\\s+inbox"
+      # DE
+      - "(?:check|zeig|lies|hol|gibt\\s+es)\\s+(?:meine?\\s+)?(?:e-?mails?|nachrichten|posteingang)"
+      - "(?:habe\\s+ich|sind\\s+da)\\s+(?:neue\\s+)?(?:e-?mails?|nachrichten)"
+      - "was\\s+ist\\s+in\\s+meinem\\s+posteingang"
+    action: "personal"
+    personal_tool: "email_inbox_summary"
+
+  email_search:
+    patterns:
+      # EN
+      - "(?:emails?|mails?)\\s+from\\s+(?P<sender>[\\w@.\\s]+)"
+      - "(?:find|search|look\\s+for)\\s+(?:an?\\s+)?email\\s+(?:about|from|re)\\s+(?P<query>[\\w\\s]+)"
+      # DE
+      - "(?:e-?mails?|nachrichten)\\s+von\\s+(?P<sender>[\\w@.\\s]+)"
+      - "(?:suche?|finde?)\\s+(?:eine?\\s+)?e-?mail\\s+(?:über|von|betreff)\\s+(?P<query>[\\w\\s]+)"
+    action: "personal"
+    personal_tool: "email_search"
+    slot_map:
+      sender: sender
+      query: subject_contains
+
+  # ── Finance ──────────────────────────────────────────────────────────────────
+  finance_weekly_spending:
+    patterns:
+      # EN
+      - "how\\s+much\\s+(?:did\\s+i|have\\s+i)\\s+spent?\\s+(?:this\\s+week|this\\s+month|today)"
+      - "(?:my\\s+)?(?:weekly|monthly|daily)\\s+(?:spending|expenses?)"
+      - "(?:show|what(?:'s|\\s+is))\\s+(?:my\\s+)?spending\\s+(?:this\\s+week|this\\s+month)?"
+      # DE
+      - "(?:wie\\s+viel|was)\\s+habe?\\s+ich\\s+(?:diese\\s+woche|diesen\\s+monat|heute)\\s+ausgegeben"
+      - "(?:meine?\\s+)?(?:wöchentliche?|monatliche?|tägliche?)\\s+(?:ausgaben?|einkäufe?)"
+      - "(?:zeig|was\\s+sind)\\s+(?:meine?\\s+)?ausgaben\\s+(?:diese\\s+woche|diesen\\s+monat)?"
+    action: "personal"
+    personal_tool: "finance_spending_summary"
+
+  finance_budget:
+    patterns:
+      # EN
+      - "(?:am\\s+i|show\\s+my)\\s+(?:over\\s+)?budget"
+      - "(?:my\\s+)?budget\\s+(?:status|overview|left)"
+      - "how\\s+much\\s+(?:budget|money)\\s+(?:do\\s+i\\s+have\\s+left|is\\s+left)"
+      # DE
+      - "(?:bin\\s+ich|zeig\\s+mein)\\s+budget"
+      - "(?:mein\\s+)?budget(?:übersicht|status|übrig)?"
+      - "wie\\s+viel\\s+budget\\s+(?:habe\\s+ich\\s+noch|ist\\s+noch\\s+übrig)"
+    action: "personal"
+    personal_tool: "finance_budget_overview"
+
+  finance_balance:
+    patterns:
+      # EN
+      - "(?:my\\s+)?(?:account\\s+)?balance"
+      - "how\\s+much\\s+(?:money\\s+)?(?:do\\s+i\\s+have|is\\s+in\\s+my\\s+account)"
+      # DE
+      - "(?:mein\\s+)?kontostand"
+      - "wie\\s+viel\\s+(?:geld\\s+)?(?:habe\\s+ich|ist\\s+auf\\s+(?:dem|meinem)\\s+konto)"
+    action: "personal"
+    personal_tool: "finance_account_balances"
+
+  # ── Receipts / Paperless-ngx ─────────────────────────────────────────────────
+  receipt_rewe:
+    patterns:
+      # EN
+      - "(?:what\\s+did\\s+i\\s+buy|receipts?|purchases?|spending)\\s+(?:at|from)\\s+rewe"
+      - "rewe\\s+(?:receipts?|purchases?|spending|shopping)"
+      # DE
+      - "(?:was\\s+habe?\\s+ich\\s+bei\\s+rewe\\s+(?:gekauft|ausgegeben)|rewe\\s+eink[äa]ufe?)"
+      - "rewe\\s+(?:kassenbon|quittung|beleg|einkauf)"
+    action: "personal"
+    personal_tool: "paperless_receipt_summary"
+    slot_map:
+      correspondent: "Rewe"
+
+  receipt_any_shop:
+    patterns:
+      # EN
+      - "(?:what\\s+did\\s+i\\s+buy|receipts?|purchases?)\\s+(?:at|from)\\s+(?P<shop>[\\w\\s]+)"
+      - "(?:show|get)\\s+(?P<shop>[\\w\\s]+?)\\s+(?:receipts?|purchases?|shopping)"
+      # DE
+      - "(?:was\\s+habe?\\s+ich\\s+bei\\s+)?(?P<shop>[\\w\\s]+?)\\s+(?:gekauft|ausgegeben|eink[äa]ufe?)"
+      - "(?P<shop>[\\w\\s]+?)\\s+(?:kassenbon|quittung|beleg|einkauf)"
+    action: "personal"
+    personal_tool: "paperless_receipt_summary"
+    slot_map:
+      shop: correspondent
+
+  paperless_search:
+    patterns:
+      # EN
+      - "(?:find|search|show)\\s+(?:my\\s+)?(?:documents?|invoices?|receipts?|files?)\\s+(?:for|about|from)\\s+(?P<query>[\\w\\s]+)"
+      - "(?:my\\s+)?(?:scanned\\s+)?documents?\\s+(?:from|about)\\s+(?P<query>[\\w\\s]+)"
+      # DE
+      - "(?:finde?|suche?|zeig)\\s+(?:meine?\\s+)?(?:dokumente?|rechnungen?|belege?|dateien?)\\s+(?:für|über|von)\\s+(?P<query>[\\w\\s]+)"
+      - "(?:meine?\\s+)?(?:gescannte?\\s+)?dokumente?\\s+(?:von|über)\\s+(?P<query>[\\w\\s]+)"
+    action: "personal"
+    personal_tool: "paperless_search_documents"
+    slot_map:
+      query: query

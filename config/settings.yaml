@@ -103,3 +103,32 @@ temporal:
     - "scheduled_routine"
     - "device_monitor"
     - "energy_optimization"
+
+# ─── Email (IMAP) ─────────────────────────────────────────────────────────────
+email:
+  # IMAP server settings – supports any IMAP provider (Gmail, Mailcow, Dovecot…)
+  host: ""                    # e.g. mail.example.com or imap.gmail.com
+  port: 993
+  ssl: true
+  username: ""                # your email address
+  password: ""                # or app-specific password for Gmail
+  folder: "INBOX"
+  # Max age of emails to surface in summaries
+  default_days_back: 7
+
+# ─── Financial Planning (Firefly III) ─────────────────────────────────────────
+finance:
+  # Firefly III self-hosted instance
+  url: "http://firefly:8080"  # adjust if running externally
+  token: ""                   # Personal Access Token from Firefly III profile
+
+# ─── Paperless-ngx ────────────────────────────────────────────────────────────
+paperless:
+  url: "http://paperless:8000"
+  token: ""                   # API token from paperless admin → your profile
+  # Tags used to identify receipts (add your own)
+  receipt_tags:
+    - "receipt"
+    - "kassenbon"
+    - "quittung"
+    - "einkauf"
