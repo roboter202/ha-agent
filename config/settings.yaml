@@ -1,0 +1,105 @@
+# ─── Agent Settings ───────────────────────────────────────────────────────────
+agent:
+  # Conversation history kept in Redis per session
+  history_window: 20
+  # Max seconds before a request is routed to a faster/simpler fallback
+  timeout_tool: 8
+  timeout_general: 25
+  timeout_research: 45
+
+# ─── Models ───────────────────────────────────────────────────────────────────
+models:
+  # Fast tool-calling model (nemotron-mini or similar 4B)
+  tool:
+    name: "nemotron-mini"          # ollama model name – override to match pulled model
+    temperature: 0.0
+    num_ctx: 4096
+    num_predict: 512
+
+  # General conversation model (Qwen 2.5 9B or similar)
+  general:
+    name: "qwen2.5:7b"            # adjust to actual pulled model name
+    temperature: 0.3
+    num_ctx: 8192
+    num_predict: 1024
+
+  # Embeddings (local, runs on CPU – fastembed)
+  embedding:
+    name: "BAAI/bge-small-en-v1.5"
+    batch_size: 64
+
+  # Online fallback – used for deep reasoning / research synthesis
+  online:
+    provider: "anthropic"         # anthropic | openai
+    anthropic_model: "claude-3-5-haiku-20241022"   # fast + cheap for research
+    openai_model: "gpt-4o-mini"
+    temperature: 0.3
+    max_tokens: 2048
+
+# ─── Routing Thresholds ───────────────────────────────────────────────────────
+routing:
+  # Confidence score (0-1) above which pattern matching triggers INSTANT path
+  instant_confidence: 0.85
+  # If tool agent can't resolve within N tokens, escalate to general
+  tool_max_tokens_before_escalate: 400
+  # Search results count for research agent
+  search_result_count: 8
+  # Trigger online LLM if local confidence below this
+  escalate_to_online_threshold: 0.4
+
+# ─── Home Assistant ───────────────────────────────────────────────────────────
+home_assistant:
+  # Entity domains to cache in Redis (refreshed via WS subscription)
+  cached_domains:
+    - light
+    - switch
+    - sensor
+    - binary_sensor
+    - climate
+    - cover
+    - lock
+    - media_player
+    - person
+    - weather
+  # State cache TTL in seconds (WS events keep it fresh, this is a safety net)
+  state_ttl: 300
+  # HA areas to include in RAG context (empty = all)
+  areas: []
+
+# ─── RAG ──────────────────────────────────────────────────────────────────────
+rag:
+  # Qdrant collection names
+  collections:
+    ha_docs: "ha_documentation"
+    home_context: "home_context"       # rooms, devices, routines
+    conversation: "conversation_memory"
+  # Number of chunks to retrieve
+  top_k: 5
+  # Min similarity score (cosine)
+  min_score: 0.6
+
+# ─── n8n Workflows ────────────────────────────────────────────────────────────
+n8n:
+  # Map of workflow intent → n8n webhook path
+  # These are triggered WITHOUT involving any LLM
+  workflow_webhooks:
+    morning_routine: "/webhook/morning-routine"
+    evening_routine: "/webhook/evening-routine"
+    night_mode: "/webhook/night-mode"
+    away_mode: "/webhook/away-mode"
+    home_mode: "/webhook/home-mode"
+    movie_mode: "/webhook/movie-mode"
+    guest_mode: "/webhook/guest-mode"
+    notify_all: "/webhook/notify-all"
+    security_check: "/webhook/security-check"
+
+# ─── Temporal ─────────────────────────────────────────────────────────────────
+temporal:
+  namespace: "ha-agent"
+  task_queue: "ha-agent-tasks"
+  # Workflow types that run as durable Temporal workflows
+  durable_workflows:
+    - "multi_step_automation"
+    - "scheduled_routine"
+    - "device_monitor"
+    - "energy_optimization"

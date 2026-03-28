@@ -1,0 +1,39 @@
+# ─── Web Framework ────────────────────────────────────────────────────────────
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+uvloop==0.21.0
+websockets==14.1
+httpx==0.28.1
+aiohttp==3.11.11
+
+# ─── LangGraph + LangChain (multi-agent orchestration) ────────────────────────
+langgraph==0.2.68
+langchain-core==0.3.29
+langchain-community==0.3.15
+langchain-ollama==0.2.3
+langchain-anthropic==0.3.3
+langchain-openai==0.3.1
+
+# ─── Temporal (durable workflow orchestration) ────────────────────────────────
+temporalio==1.8.0
+
+# ─── Vector DB + Embeddings ───────────────────────────────────────────────────
+qdrant-client==1.12.1
+sentence-transformers==3.3.1
+fastembed==0.4.2
+
+# ─── Cache ────────────────────────────────────────────────────────────────────
+redis[hiredis]==5.2.1
+
+# ─── Config + Utils ───────────────────────────────────────────────────────────
+pydantic==2.10.4
+pydantic-settings==2.7.0
+pyyaml==6.0.2
+python-dotenv==1.0.1
+structlog==24.4.0
+tenacity==9.0.0
+orjson==3.10.12
+
+# ─── NLP (lightweight, for fast intent pre-classification) ────────────────────
+regex==2024.11.6
+rapidfuzz==3.12.2

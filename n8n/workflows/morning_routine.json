@@ -1,0 +1,114 @@
+{
+  "name": "Morning Routine",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "morning-routine",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "morning-routine"
+    },
+    {
+      "parameters": {
+        "url": "={{$env.HA_URL}}/api/services/scene/turn_on",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "entity_id",
+              "value": "scene.morning"
+            }
+          ]
+        }
+      },
+      "name": "Activate Morning Scene",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.HA_URL}}/api/services/climate/set_temperature",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "entity_id",
+              "value": "climate.main"
+            },
+            {
+              "name": "temperature",
+              "value": "21"
+            }
+          ]
+        }
+      },
+      "name": "Set Morning Temperature",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Activate Morning Scene",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Activate Morning Scene": {
+      "main": [
+        [
+          {
+            "node": "Set Morning Temperature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Morning Temperature": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "saveDataSuccessExecution": "never",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false
+  },
+  "staticData": null,
+  "tags": ["home-automation", "routine"],
+  "triggerCount": 0
+}

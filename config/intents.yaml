@@ -1,0 +1,302 @@
+# Intent patterns for INSTANT routing (no LLM needed).
+# Each entry has: patterns (regex list), action, and required slots.
+# Matched at < 5ms using compiled regex before any LLM is invoked.
+# Languages supported: English (EN) + German (DE)
+
+instant_intents:
+
+  # ── Lights ──────────────────────────────────────────────────────────────────
+  turn_on_light:
+    patterns:
+      # EN
+      - "turn\\s+on\\s+(?:the\\s+)?(?P<area>[\\w\\s]+?)\\s+lights?"
+      - "switch\\s+on\\s+(?:the\\s+)?(?P<area>[\\w\\s]+?)\\s+lights?"
+      - "lights?\\s+on\\s+in\\s+(?:the\\s+)?(?P<area>[\\w\\s]+)"
+      - "(?P<area>[\\w\\s]+?)\\s+lights?\\s+on"
+      # DE
+      - "(?:mach|schalte?|tu)\\s+(?:das\\s+|die\\s+|den\\s+)?(?:licht|lampe[n]?)\\s+(?:im?|in der|in dem|im)\\s+(?P<area>[\\w\\s]+?)\\s+an"
+      - "(?:mach|schalte?|tu)\\s+(?:das\\s+|die\\s+|den\\s+)?(?P<area>[\\w\\s]+?)\\s+(?:licht|lampe[n]?)\\s+an"
+      - "(?P<area>[\\w\\s]+?)\\s+(?:licht|lampe[n]?)\\s+an(?:schalten|machen)?"
+      - "licht\\s+an\\s+(?:im?|in der|in dem)\\s+(?P<area>[\\w\\s]+)"
+    service: "light.turn_on"
+    slot_map:
+      area: area_name
+
+  turn_off_light:
+    patterns:
+      # EN
+      - "turn\\s+off\\s+(?:the\\s+)?(?P<area>[\\w\\s]+?)\\s+lights?"
+      - "switch\\s+off\\s+(?:the\\s+)?(?P<area>[\\w\\s]+?)\\s+lights?"
+      - "lights?\\s+off\\s+in\\s+(?:the\\s+)?(?P<area>[\\w\\s]+)"
+      - "(?P<area>[\\w\\s]+?)\\s+lights?\\s+off"
+      - "kill\\s+(?:the\\s+)?(?P<area>[\\w\\s]+?)\\s+lights?"
+      # DE
+      - "(?:mach|schalte?|tu)\\s+(?:das\\s+|die\\s+|den\\s+)?(?:licht|lampe[n]?)\\s+(?:im?|in der|in dem)\\s+(?P<area>[\\w\\s]+?)\\s+aus"
+      - "(?:mach|schalte?|tu)\\s+(?:das\\s+|die\\s+|den\\s+)?(?P<area>[\\w\\s]+?)\\s+(?:licht|lampe[n]?)\\s+aus"
+      - "(?P<area>[\\w\\s]+?)\\s+(?:licht|lampe[n]?)\\s+aus(?:schalten|machen)?"
+      - "licht\\s+aus\\s+(?:im?|in der|in dem)\\s+(?P<area>[\\w\\s]+)"
+    service: "light.turn_off"
+    slot_map:
+      area: area_name
+
+  set_light_brightness:
+    patterns:
+      # EN
+      - "set\\s+(?:the\\s+)?(?P<area>[\\w\\s]+?)\\s+lights?\\s+to\\s+(?P<brightness>\\d+)\\s*(?:percent|%)"
+      - "dim\\s+(?:the\\s+)?(?P<area>[\\w\\s]+?)\\s+lights?\\s+to\\s+(?P<brightness>\\d+)"
+      # DE
+      - "(?:stelle?|dimme?)\\s+(?:das\\s+|die\\s+)?(?:licht|lampe[n]?)\\s+(?:im?|in der|in dem)\\s+(?P<area>[\\w\\s]+?)\\s+auf\\s+(?P<brightness>\\d+)\\s*(?:prozent|%)?"
+      - "(?:dimme?)\\s+(?:das\\s+)?(?P<area>[\\w\\s]+?)\\s+(?:licht)?\\s+auf\\s+(?P<brightness>\\d+)"
+    service: "light.turn_on"
+    slot_map:
+      area: area_name
+      brightness: brightness_pct
+
+  turn_on_all_lights:
+    patterns:
+      # EN
+      - "turn\\s+on\\s+all\\s+(?:the\\s+)?lights?"
+      - "lights?\\s+all\\s+on"
+      - "all\\s+lights?\\s+on"
+      # DE
+      - "alle\\s+(?:lichter?|lampe[n]?)\\s+an(?:schalten|machen)?"
+      - "(?:mach|schalte?)\\s+alle\\s+(?:lichter?|lampe[n]?)\\s+an"
+    service: "light.turn_on"
+    target: all
+
+  turn_off_all_lights:
+    patterns:
+      # EN
+      - "turn\\s+off\\s+all\\s+(?:the\\s+)?lights?"
+      - "all\\s+lights?\\s+off"
+      - "lights?\\s+all\\s+off"
+      - "kill\\s+all\\s+(?:the\\s+)?lights?"
+      # DE
+      - "alle\\s+(?:lichter?|lampe[n]?)\\s+aus(?:schalten|machen)?"
+      - "(?:mach|schalte?)\\s+alle\\s+(?:lichter?|lampe[n]?)\\s+aus"
+    service: "light.turn_off"
+    target: all
+
+  # ── Switches ────────────────────────────────────────────────────────────────
+  turn_on_switch:
+    patterns:
+      # EN
+      - "turn\\s+on\\s+(?:the\\s+)?(?P<name>[\\w\\s]+?)(?:\\s+switch)?"
+      - "switch\\s+on\\s+(?:the\\s+)?(?P<name>[\\w\\s]+)"
+      # DE
+      - "(?:schalte?|mach)\\s+(?:den?|die|das)?\\s*(?P<name>[\\w\\s]+?)\\s+an"
+    service: "switch.turn_on"
+    slot_map:
+      name: entity_name
+
+  turn_off_switch:
+    patterns:
+      # EN
+      - "turn\\s+off\\s+(?:the\\s+)?(?P<name>[\\w\\s]+?)(?:\\s+switch)?"
+      - "switch\\s+off\\s+(?:the\\s+)?(?P<name>[\\w\\s]+)"
+      # DE
+      - "(?:schalte?|mach)\\s+(?:den?|die|das)?\\s*(?P<name>[\\w\\s]+?)\\s+aus"
+    service: "switch.turn_off"
+    slot_map:
+      name: entity_name
+
+  # ── Climate ─────────────────────────────────────────────────────────────────
+  set_temperature:
+    patterns:
+      # EN
+      - "set\\s+(?:the\\s+)?(?:thermostat|temperature)\\s+to\\s+(?P<temp>[\\d.]+)(?:\\s*(?:degrees?|°)?\\s*(?P<unit>[CF])?)?"
+      - "(?:heat|cool)\\s+(?:the\\s+)?(?:house|home)\\s+to\\s+(?P<temp>[\\d.]+)"
+      - "(?P<temp>[\\d.]+)\\s+degrees?\\s+(?:please|now)?"
+      # DE
+      - "(?:stelle?|setze?)\\s+(?:die\\s+)?(?:heizung|temperatur|thermostat)\\s+auf\\s+(?P<temp>[\\d.]+)\\s*(?:grad|°)?\\s*(?P<unit>[CF])?"
+      - "(?P<temp>[\\d.]+)\\s+(?:grad|°)\\s+(?:bitte|jetzt)?"
+      - "heize?\\s+(?:das\\s+)?(?:haus|zuhause)\\s+auf\\s+(?P<temp>[\\d.]+)"
+    service: "climate.set_temperature"
+    slot_map:
+      temp: temperature
+      unit: unit
+
+  # ── Locks ───────────────────────────────────────────────────────────────────
+  lock_door:
+    patterns:
+      # EN
+      - "lock\\s+(?:the\\s+)?(?P<name>[\\w\\s]*?)\\s*(?:door|lock)"
+      - "lock\\s+(?:up|everything|all)"
+      # DE
+      - "(?:schließe?|sperre?)\\s+(?:die|den)?\\s*(?P<name>[\\w\\s]*?)\\s*(?:tür|schloss|haustür)\\s+ab"
+      - "abschließen\\s+(?:bitte)?"
+      - "(?:alles?|alle\\s+türen?)\\s+abschließen"
+    service: "lock.lock"
+    slot_map:
+      name: entity_name
+
+  unlock_door:
+    patterns:
+      # EN
+      - "unlock\\s+(?:the\\s+)?(?P<name>[\\w\\s]*?)\\s*(?:door|lock)"
+      # DE
+      - "(?:öffne?|entsperre?)\\s+(?:die|den)?\\s*(?P<name>[\\w\\s]*?)\\s*(?:tür|schloss|haustür)"
+      - "aufschließen\\s+(?:bitte)?"
+    service: "lock.unlock"
+    slot_map:
+      name: entity_name
+
+  # ── Covers / Blinds ─────────────────────────────────────────────────────────
+  open_cover:
+    patterns:
+      # EN
+      - "open\\s+(?:the\\s+)?(?P<name>[\\w\\s]+?)\\s*(?:blinds?|shades?|curtains?|cover)?"
+      # DE
+      - "(?:öffne?|hochfahren|hoch)\\s+(?:die|den)?\\s*(?P<name>[\\w\\s]+?)\\s*(?:jalousie[n]?|rollade[n]?|vorhäng[e]?|rollo[s]?)?"
+      - "(?P<name>[\\w\\s]+?)\\s*(?:jalousie[n]?|rollade[n]?|vorhäng[e]?|rollo[s]?)\\s+(?:öffnen|hochfahren|hoch)"
+    service: "cover.open_cover"
+    slot_map:
+      name: entity_name
+
+  close_cover:
+    patterns:
+      # EN
+      - "close\\s+(?:the\\s+)?(?P<name>[\\w\\s]+?)\\s*(?:blinds?|shades?|curtains?|cover)?"
+      # DE
+      - "(?:schließe?|runterfahren|runter|zu)\\s+(?:die|den)?\\s*(?P<name>[\\w\\s]+?)\\s*(?:jalousie[n]?|rollade[n]?|vorhäng[e]?|rollo[s]?)?"
+      - "(?P<name>[\\w\\s]+?)\\s*(?:jalousie[n]?|rollade[n]?|vorhäng[e]?|rollo[s]?)\\s+(?:schließen|runterfahren|runter|zu)"
+    service: "cover.close_cover"
+    slot_map:
+      name: entity_name
+
+  # ── Media ───────────────────────────────────────────────────────────────────
+  media_play:
+    patterns:
+      # EN
+      - "play\\s+(?:on\\s+)?(?:the\\s+)?(?P<player>[\\w\\s]+)"
+      - "resume\\s+(?:on\\s+)?(?:the\\s+)?(?P<player>[\\w\\s]+)"
+      # DE
+      - "(?:spiele?|abspielen|weiter)\\s+(?:auf\\s+)?(?:dem?|der)?\\s*(?P<player>[\\w\\s]+)"
+    service: "media_player.media_play"
+    slot_map:
+      player: entity_name
+
+  media_pause:
+    patterns:
+      # EN
+      - "pause\\s+(?:on\\s+)?(?:the\\s+)?(?P<player>[\\w\\s]+)"
+      - "stop\\s+(?:on\\s+)?(?:the\\s+)?(?P<player>[\\w\\s]+)"
+      # DE
+      - "(?:pausiere?|stoppe?|anhalten)\\s+(?:auf\\s+)?(?:dem?|der)?\\s*(?P<player>[\\w\\s]+)"
+    service: "media_player.media_pause"
+    slot_map:
+      player: entity_name
+
+  set_volume:
+    patterns:
+      # EN
+      - "set\\s+(?:the\\s+)?(?:volume|vol)\\s+(?:of\\s+)?(?P<player>[\\w\\s]+?)\\s+to\\s+(?P<volume>\\d+)"
+      - "(?P<player>[\\w\\s]+?)\\s+volume\\s+(?P<volume>\\d+)"
+      # DE
+      - "(?:stelle?|setze?)\\s+(?:die\\s+)?lautstärke\\s+(?:von\\s+)?(?:dem?|der)?\\s*(?P<player>[\\w\\s]+?)\\s+auf\\s+(?P<volume>\\d+)"
+      - "(?P<player>[\\w\\s]+?)\\s+lautstärke\\s+(?P<volume>\\d+)"
+    service: "media_player.volume_set"
+    slot_map:
+      player: entity_name
+      volume: volume_level
+
+  # ── Scenes / Scripts ─────────────────────────────────────────────────────────
+  activate_scene:
+    patterns:
+      # EN
+      - "activate\\s+(?:the\\s+)?(?P<scene>[\\w\\s]+?)\\s+scene"
+      - "set\\s+(?:the\\s+)?(?P<scene>[\\w\\s]+?)\\s+scene"
+      - "(?P<scene>[\\w\\s]+?)\\s+scene\\s+(?:please|now|activate)"
+      # DE
+      - "(?:aktiviere?|starte?)\\s+(?:die\\s+)?(?P<scene>[\\w\\s]+?)\\s+(?:szene|atmosphäre)"
+      - "(?P<scene>[\\w\\s]+?)\\s+(?:szene|atmosphäre)\\s+(?:bitte|aktivieren|starten)"
+    service: "scene.turn_on"
+    slot_map:
+      scene: entity_name
+
+  # ── State Queries ────────────────────────────────────────────────────────────
+  query_state:
+    patterns:
+      # EN
+      - "(?:what(?:'s|\\s+is)?|is|are)\\s+(?:the\\s+)?(?P<entity>[\\w\\s]+?)\\s+(?:on|off|open|closed|locked|unlocked)\\?"
+      - "is\\s+(?:the\\s+)?(?P<entity>[\\w\\s]+?)\\s+(?:on|off|open|closed|locked|unlocked)\\?"
+      - "(?:what(?:'s|\\s+is)?\\s+)?(?:the\\s+)?(?P<entity>[\\w\\s]+?)\\s+(?:temperature|humidity|status|state)"
+      # DE
+      - "(?:ist|sind|was ist|wie ist)\\s+(?:das?|die|der)?\\s*(?P<entity>[\\w\\s]+?)\\s+(?:an|aus|auf|zu|offen|geschlossen|gesperrt|entsperrt|eingeschaltet|ausgeschaltet)\\?"
+      - "(?:wie|was)\\s+(?:ist\\s+)?(?:die\\s+|der\\s+|das\\s+)?(?P<entity>[\\w\\s]+?)\\s+(?:temperatur|luftfeuchtigkeit|status|zustand|helligkeit)"
+    action: "query_entity_state"
+    slot_map:
+      entity: entity_name
+
+  # ── n8n Routine Triggers (no LLM) ────────────────────────────────────────────
+  morning_routine:
+    patterns:
+      # EN
+      - "(?:start|run|begin|activate|trigger)\\s+(?:my\\s+)?morning\\s+routine"
+      - "good\\s+morning"
+      # DE
+      - "(?:starte?|aktiviere?|beginne?)\\s+(?:meine\\s+)?morgen(?:routine|ablauf)?"
+      - "guten\\s+morgen"
+    action: "n8n_webhook"
+    webhook: "morning_routine"
+
+  evening_routine:
+    patterns:
+      # EN
+      - "(?:start|run|begin|activate|trigger)\\s+(?:my\\s+)?evening\\s+routine"
+      - "good\\s+evening"
+      # DE
+      - "(?:starte?|aktiviere?|beginne?)\\s+(?:meine\\s+)?abend(?:routine|ablauf)?"
+      - "guten\\s+abend"
+    action: "n8n_webhook"
+    webhook: "evening_routine"
+
+  night_mode:
+    patterns:
+      # EN
+      - "(?:activate|start|set|enable)\\s+night\\s+(?:mode|time)"
+      - "(?:going|time)\\s+to\\s+(?:sleep|bed)"
+      - "good\\s+night"
+      # DE
+      - "(?:aktiviere?|starte?|setze?)\\s+(?:den?\\s+)?nacht(?:modus|modus)?"
+      - "(?:ich\\s+)?gehe?\\s+(?:jetzt\\s+)?(?:schlafen|ins\\s+bett)"
+      - "gute\\s+nacht"
+      - "schlafenszeit"
+    action: "n8n_webhook"
+    webhook: "night_mode"
+
+  away_mode:
+    patterns:
+      # EN
+      - "(?:i'?m?\\s+)?(?:leaving|going\\s+out|heading\\s+out)"
+      - "(?:activate|start|set)\\s+away\\s+mode"
+      - "bye|goodbye"
+      # DE
+      - "(?:ich\\s+)?(?:gehe?|fahre?|verlasse?)\\s+(?:jetzt\\s+)?(?:das\\s+haus|nach hause|weg|raus)"
+      - "(?:aktiviere?|starte?|setze?)\\s+(?:den?\\s+)?abwesenheits?(?:modus)?"
+      - "(?:tschüss|auf wiedersehen|tschau)"
+    action: "n8n_webhook"
+    webhook: "away_mode"
+
+  home_mode:
+    patterns:
+      # EN
+      - "(?:i'?m?\\s+)?(?:home|back|arrived)"
+      - "(?:activate|start|set)\\s+home\\s+mode"
+      # DE
+      - "(?:ich\\s+)?(?:bin\\s+)?(?:wieder\\s+)?(?:zuhause|daheim|zurück|angekommen)"
+      - "(?:aktiviere?|starte?|setze?)\\s+(?:den?\\s+)?zu?hause?(?:modus)?"
+    action: "n8n_webhook"
+    webhook: "home_mode"
+
+  movie_mode:
+    patterns:
+      # EN
+      - "(?:activate|start|set|enable|movie|cinema)\\s+movie\\s+(?:mode|time)?"
+      - "(?:we'?re?\\s+)?watching\\s+(?:a\\s+)?movie"
+      # DE
+      - "(?:aktiviere?|starte?|setze?)\\s+(?:den?\\s+)?film(?:modus|abend|abend)?"
+      - "(?:wir\\s+)?(?:schauen|gucken|sehen)\\s+(?:uns\\s+)?(?:einen?\\s+)?film"
+      - "kino(?:modus|abend)?"
+    action: "n8n_webhook"
+    webhook: "movie_mode"
